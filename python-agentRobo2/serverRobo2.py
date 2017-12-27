@@ -4,7 +4,7 @@ import cherrypy
 import argparse
 from ws4py.server.cherrypyserver import WebSocketPlugin, WebSocketTool
 from ws4py.websocket import WebSocket
-from cnn_dqn_agentRobo import CnnDqnAgent
+from cnn_dqn_agentRobo2 import CnnDqnAgent
 import msgpack
 import io
 from PIL import Image
@@ -14,6 +14,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import cv2
+
 
 parser = argparse.ArgumentParser(description='ml-agent-for-unity')
 
