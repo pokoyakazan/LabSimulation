@@ -102,21 +102,14 @@ class AgentServer(WebSocket):
         for i in xrange(self.depth_image_count):
             one_image = Image.open(io.BytesIO(bytearray(dat['image'][i])))
             image.append(one_image)
-        depth = []
-        for i in xrange(self.depth_image_count):
-            d = (Image.open(io.BytesIO(bytearray(dat['depth'][i]))))
-            #depth画像は一次元ベクトルにreshape
-            depth.append(np.array(ImageOps.grayscale(d)).reshape(self.depth_image_dim))
-
-
 
         #if self.agent_initialized:
             #self.pause_Image_plot(image[0])
 
+        velocity = dat['velocity']
+        steering = dat['steering']
+        observation = {"image":image, "velocity":velocity, "steering":steering}
 
-
-
-        observation = {"image": image, "depth": depth}
         reward = dat['reward']
         end_episode = dat['endEpisode']
 
@@ -132,7 +125,7 @@ class AgentServer(WebSocket):
                 folder = self.folder,
                 model_num = self.model_num)
 
-            action = self.agent.agent_start(observation,self.episode_num)
+            action = self.agent.agent_start(observation)
             self.send_action(action)
 
             #logファイルへの書き込み
@@ -166,11 +159,14 @@ class AgentServer(WebSocket):
 
                 self.episode_num += 1
 
-                action = self.agent.agent_start(observation,self.episode_num)  # TODO
+                print "----------------------------------"
+                print "Episode %d Start"%(self.episode_num)
+                print "----------------------------------"
+                action = self.agent.agent_start(observation)
                 self.send_action(action)
 
             else:
-                action, eps, q_now, obs_array = self.agent.agent_step(reward, observation)
+                action, eps, q_now, obs_array = self.agent.agent_step( observation)
 
                 self.send_action(action)
                 self.agent.agent_step_update(reward, action, eps, q_now, obs_array)

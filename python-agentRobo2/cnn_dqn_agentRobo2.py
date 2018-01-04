@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+v,steer# -*- coding: utf-8 -*-
 
 import six.moves.cPickle as pickle
 import copy
@@ -14,20 +14,11 @@ from q_netRobo2 import QNet
 
 class CnnDqnAgent(object):
     policy_frozen = False
-    #deltaの減少量
-    '''
-    ----------------------変更！！！----------------------
-    '''
-    #epsilon_delta = 1.0 / 10 ** 4.4
     #15万CycleでEpsが0.1になる
     epsilon_delta = 0.9/(15*(10**4))
     #アクションリスト(数字じゃなくても大丈夫)
-    #actions = [0, 1, 2, 3, 4, 5, 6]
-    #         [-30,-25,-20,-15,-10,-5, 0, 5,10,15,20,25,30]
-    actions = [  0,  1,  2,  3,  4, 5, 6, 7, 8, 9,10,11,12]
-    '''
-    ------------------------------------------------------
-    '''
+    actions = range(14)
+
 
     #deltaの最小値
     min_eps = 0.1
@@ -39,32 +30,20 @@ class CnnDqnAgent(object):
     image_feature_dim = 256 * 6 * 6
     image_feature_count = 1
 
+    def make_non_img_feature(self,v,steer):
+
+
+
 
     def _observation_to_featurevec(self, observation):
         # TODO clean
         if self.image_feature_count == 1:
-            try:
-                '''
-                ----------------------変更！！！----------------------
-                '''
-                #return np.r_[self.feature_extractor.feature(observation["image"][0]),observation["depth"][0]]
-                return self.feature_extractor.feature(observation["image"][0])
-                '''
-                ------------------------------------------------------
-                '''
-            except:
-                import traceback
-                traceback.print_exc()
-
+            return np.r_[self.feature_extractor.feature(observation["image"][0])]
         elif self.image_feature_count == 4:
             return np.r_[self.feature_extractor.feature(observation["image"][0]),
-                         self.feature_extractor.feature(observation["image"][1]),
-                         self.feature_extractor.feature(observation["image"][2]),
-                         self.feature_extractor.feature(observation["image"][3]),
-                         observation["depth"][0],
-                         observation["depth"][1],
-                         observation["depth"][2],
-                         observation["depth"][3]]
+                 self.feature_extractor.feature(observation["image"][1]),
+                 self.feature_extractor.feature(observation["image"][2]),
+                 self.feature_extractor.feature(observation["image"][3]]
         else:
             print("not supported: number of camera")
 
@@ -113,10 +92,7 @@ class CnnDqnAgent(object):
 
 
     # 行動取得系,state更新系メソッド
-    def agent_start(self, observation, episode_num):
-        print "----------------------------------"
-        print "Episode %d Start"%(episode_num)
-        print "----------------------------------"
+    def agent_start(self, observation):
         obs_array = self._observation_to_featurevec(observation)
         # Initialize State
         self.state = np.zeros((self.q_net.hist_size, self.q_net_input_dim), dtype=np.uint8)
@@ -139,7 +115,7 @@ class CnnDqnAgent(object):
         return return_action
 
     # 行動取得系,state更新系メソッド
-    def agent_step(self, reward, observation):
+    def agent_step(self,observation):
         # rewardは使ってない
 
         obs_array = self._observation_to_featurevec(observation)
