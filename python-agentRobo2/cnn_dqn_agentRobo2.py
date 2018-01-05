@@ -65,6 +65,10 @@ class CnnDqnAgent(object):
             laccel,lhandle = self.action_to_ah(self.last_action)
             llaccel,llhandle = self.action_to_ah(self.last_last_action)
             lllaccel,lllhandle = self.action_to_ah(self.last_last_last_action)
+            #print "(",laccel,",",lhandle,")"
+            #print "(",llaccel,",",llhandle,")"
+            #print "(",lllaccel,",",lllhandle,")"
+
             return np.r_[self.feature_extractor.feature(observation["image"][0]),
                         observation["velocity"],
                         observation["steering"],

@@ -137,7 +137,7 @@ class AgentServer(WebSocket):
             self.reward_sum += reward
 
             if end_episode:
-                self.agent.agent_end(reward,self.reward_sum)
+                self.agent.agent_end(reward)
                 #logファイルへの書き込み
                 with open(self.log_file, 'a') as the_file:
                     the_file.write(str(self.cycle_counter) +
