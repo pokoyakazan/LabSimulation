@@ -73,11 +73,11 @@ class CnnFeatureExtractor:
         else:
             feature = feature.data.reshape(self.out_dim)
 
-        print "MAX of Image Feature"
-        print np.max(feature)
-        print "MIN of Image Feature"
-        print np.min(feature)
-        print "AVERAGE of Image Feature"
-        print np.average(feature)
+        print ("MAX of Image Feature")
+        print (np.max(feature))
+        print ("MIN of Image Feature")
+        print (np.min(feature))
+        print ("AVERAGE of Image Feature")
+        print (np.average(feature))
         #return feature * 255.0
         return feature # depth_imageと合わせる必要がない

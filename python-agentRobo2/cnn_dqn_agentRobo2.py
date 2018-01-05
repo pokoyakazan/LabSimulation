@@ -1,4 +1,4 @@
-v,steer# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import six.moves.cPickle as pickle
 import copy
