@@ -17,7 +17,7 @@ class CnnDqnAgent(object):
     #15万CycleでEpsが0.1になる
     epsilon_delta = 0.9/(15*(10**4))
     #アクションリスト(数字じゃなくても大丈夫)
-    actions = range(14)
+    actions = range(9)
 
 
     #deltaの最小値
@@ -30,7 +30,7 @@ class CnnDqnAgent(object):
     image_feature_dim = 256 * 6 * 6
     image_feature_count = 1
 
-    non_image_feature_dim = 256 * 6 * 6
+    non_image_feature_dim = 5
 
     def _observation_to_featurevec(self, observation):
         # TODO clean
@@ -59,7 +59,8 @@ class CnnDqnAgent(object):
         ----------------------変更！！！----------------------
         '''
         #self.q_net_input_dim = self.image_feature_dim * self.image_feature_count + self.depth_image_dim
-        self.q_net_input_dim = self.image_feature_dim * self.image_feature_count
+        #self.q_net_input_dim = self.image_feature_dim * self.image_feature_count
+        self.q_net_input_dim = self.image_feature_dim * self.image_feature_count + non_image_feature_dim
         '''
         ------------------------------------------------------
         '''
@@ -81,7 +82,6 @@ class CnnDqnAgent(object):
         model_num = options['model_num']
         #save_modelでもしようするため,selfをつけた
         self.folder = options["folder"]
-
         self.policy_frozen = test
 
         #saveとloadが同時に行われることを防ぐため
@@ -110,6 +110,14 @@ class CnnDqnAgent(object):
 
         # Update for next step
         self.last_action = copy.deepcopy(return_action)
+        self.last_last_action = int(len(self.actions)/2)
+        self.last_last_last_action = int(len(self.actions)/2)
+
+        print "Last Last Action : ",
+        print self.last_last_action
+        print "Last Last Last Action : ",
+        print self.last_last_last_action
+
         self.last_state = self.state.copy()
 
         # 更新するだけで使ってない
@@ -184,8 +192,15 @@ class CnnDqnAgent(object):
         # Updates for next step , 更新するだけで使ってない
         self.last_observation = obs_array
 
+        self.last_last_last_action = copy.deepcopy(self.last_last_action)
+        self.last_last_action = copy.deepcopy(self.last_action)
+        self.last_action = copy.deepcopy(action)
+        print "Last Last Action : ",
+        print self.last_last_action
+        print "Last Last Last Action : ",
+        print self.last_last_last_action
+
         if self.policy_frozen is False:
-            self.last_action = copy.deepcopy(action)
             self.last_state = self.state.copy()
 
             # save model
