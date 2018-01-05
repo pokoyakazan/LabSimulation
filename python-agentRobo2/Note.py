@@ -13,7 +13,17 @@ from chainer import cuda
 print 3
 
 actions = range(9)
-int(len(actions)/2)
+
+def action_to_ah(action):
+    a = int(action / 3)
+    h = action%3
+    return a,h
+
+for i in range(9):
+    a,h =  action_to_ah(i)
+    print a
+    print h
+    print "--------"
 
 
 last_action = np.array(range(3,6))

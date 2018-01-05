@@ -30,7 +30,13 @@ class CnnDqnAgent(object):
     image_feature_dim = 256 * 6 * 6
     image_feature_count = 1
 
-    non_image_feature_dim = 5
+    #non_image_feature_dim = 5
+    non_image_feature_dim = 8
+
+    def action_to_ah(self,action):
+        a = int(action / 3)
+        h = action%3
+        return a,h
 
     def _observation_to_featurevec(self, observation):
         '''
@@ -48,12 +54,27 @@ class CnnDqnAgent(object):
 
         # TODO clean
         if self.image_feature_count == 1:
+            '''
             return np.r_[self.feature_extractor.feature(observation["image"][0]),
                         observation["velocity"],
                         observation["steering"],
                         self.last_action,
                         self.last_last_action,
                         self.last_last_last_action]
+            '''
+            laccel,lhandle = self.action_to_ah(self.last_action)
+            llaccel,llhandle = self.action_to_ah(self.last_last_action)
+            lllaccel,lllhandle = self.action_to_ah(self.last_last_last_action)
+            return np.r_[self.feature_extractor.feature(observation["image"][0]),
+                        observation["velocity"],
+                        observation["steering"],
+                        laccel,
+                        llaccel,
+                        lllaccel,
+                        lhandle,
+                        llhandle,
+                        lllhandle]
+
 
         elif self.image_feature_count == 4:
             return np.r_[self.feature_extractor.feature(observation["image"][0]),
@@ -63,7 +84,6 @@ class CnnDqnAgent(object):
 
         else:
             print("not supported: number of camera")
-
 
     def agent_init(self, **options):
         self.use_gpu = options['use_gpu']
@@ -219,11 +239,8 @@ class CnnDqnAgent(object):
         self.time += 1
 
     # 学習系メソッド
-    def agent_end(self, reward, score):  # Episode Terminated
+    def agent_end(self, reward):  # Episode Terminated
         print('episode finished. Reward:%.2f / Epsilon:%.6f' % (reward, self.epsilon))
-
-        print "Score is %.2f"%(score)
-
 
         # Learning Phase
         if self.policy_frozen is False:  # Learning ON/OFF

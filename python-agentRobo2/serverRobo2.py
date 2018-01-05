@@ -143,6 +143,8 @@ class AgentServer(WebSocket):
                     the_file.write(str(self.cycle_counter) +
                                ',' + str(self.reward_sum) +
                                ',' + str(self.episode_num) + '\n')
+
+                print "Score is %.2f"%(self.reward_sum)
                 self.reward_sum = 0
 
 
