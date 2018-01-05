@@ -220,9 +220,9 @@ class CnnDqnAgent(object):
 
     # 学習系メソッド
     def agent_end(self, reward, score):  # Episode Terminated
-        print('episode finished. Reward:%.1f / Epsilon:%.6f' % (reward, self.epsilon))
+        print('episode finished. Reward:%.2f / Epsilon:%.6f' % (reward, self.epsilon))
 
-        print "Score is %d"%(score)
+        print "Score is %.2f"%(score)
 
 
         # Learning Phase
