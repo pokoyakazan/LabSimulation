@@ -29,8 +29,6 @@ parser.add_argument('--model_num', '-m', default=0,type=int,
 parser.add_argument('--test', '-t', action = "store_true",
                     help=u'TEST frags, False => Train')
 
-parser.add_argument('--succeed', '-s', action = "store_true",
-                    help=u'Modelを引き継いでトレーニングをするか')
 parser.add_argument('--episode', '-e', default=1, type=int,
                     help=u'logファイルに書き込む際のエピソードの数')
 
@@ -77,7 +75,6 @@ class AgentServer(WebSocket):
     gpu = args.gpu
     draw = args.draw
     test = args.test
-    succeed = args.succeed
     episode_num = args.episode #行ったエピソードの数
     folder = args.folder
     model_num = args.model_num
@@ -121,7 +118,6 @@ class AgentServer(WebSocket):
                 use_gpu=self.gpu,
                 depth_image_dim=self.depth_image_dim * self.depth_image_count,
                 test= self.test,
-                succeed = self.succeed,
                 folder = self.folder,
                 model_num = self.model_num)
 
@@ -129,9 +125,8 @@ class AgentServer(WebSocket):
             self.send_action(action)
 
             #logファイルへの書き込み
-            if not self.succeed:
-                with open(self.log_file, 'w') as the_file:
-                    the_file.write('Cycle,Score,Episode \n')
+            with open(self.log_file, 'w') as the_file:
+                the_file.write('Cycle,Score,Episode \n')
 
             if(args.draw):
                 self.fig, self.ax1 = plt.subplots(1, 1)

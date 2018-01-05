@@ -30,22 +30,27 @@ class CnnDqnAgent(object):
     image_feature_dim = 256 * 6 * 6
     image_feature_count = 1
 
-    def make_non_img_feature(self,v,steer):
-
-
-
+    non_image_feature_dim = 256 * 6 * 6
 
     def _observation_to_featurevec(self, observation):
         # TODO clean
         if self.image_feature_count == 1:
-            return np.r_[self.feature_extractor.feature(observation["image"][0])]
+            return np.r_[self.feature_extractor.feature(observation["image"][0]),
+                        observation["velocity"],
+                        observation["steering"],
+                        self.last_last_last_action,
+                        self.last_last_action,
+                        self.last_action]
+
         elif self.image_feature_count == 4:
             return np.r_[self.feature_extractor.feature(observation["image"][0]),
-                 self.feature_extractor.feature(observation["image"][1]),
-                 self.feature_extractor.feature(observation["image"][2]),
-                 self.feature_extractor.feature(observation["image"][3]]
+                        self.feature_extractor.feature(observation["image"][1]),
+                        self.feature_extractor.feature(observation["image"][2]),
+                        self.feature_extractor.feature(observation["image"][3])]
+
         else:
             print("not supported: number of camera")
+
 
     def agent_init(self, **options):
         self.use_gpu = options['use_gpu']
@@ -73,7 +78,6 @@ class CnnDqnAgent(object):
         self.q_net = QNet(self.use_gpu, self.actions, self.q_net_input_dim)
 
         test = options['test']
-        succeed = options['succeed']
         model_num = options['model_num']
         #save_modelでもしようするため,selfをつけた
         self.folder = options["folder"]
@@ -82,12 +86,11 @@ class CnnDqnAgent(object):
 
         #saveとloadが同時に行われることを防ぐため
         self.time = model_num+1
-
         non_exploration = max(self.time - self.q_net.initial_exploration , 0)
         self.epsilon = max(1.0 - non_exploration * self.epsilon_delta , self.min_eps)
         print "epsilon = ",self.epsilon
 
-        if(test or succeed):
+        if(test):
             self.q_net.load_model(self.folder,model_num)
 
 
@@ -116,8 +119,6 @@ class CnnDqnAgent(object):
 
     # 行動取得系,state更新系メソッド
     def agent_step(self,observation):
-        # rewardは使ってない
-
         obs_array = self._observation_to_featurevec(observation)
 
         #obs_processed = np.maximum(obs_array, self.last_observation)  # Take maximum from two frames
