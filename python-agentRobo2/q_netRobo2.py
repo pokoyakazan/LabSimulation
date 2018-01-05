@@ -42,7 +42,7 @@ class QNet:
             l8=F.Linear(hidden_dim[3],hidden_dim[4],
                             wscale=np.sqrt(2)),
             q_value=F.Linear(hidden_dim[4], self.num_of_actions,
-                            initialW=np.zeros((self.num_of_actions, hidden_dim),
+                            initialW=np.zeros((self.num_of_actions, hidden_dim[4]),
                             dtype=np.float32))
         )
 
@@ -158,7 +158,7 @@ class QNet:
             self.optimizer.update()
 
     def q_func(self, state):
-        h4 = F.relu(self.model.l4(state / 255.0))
+        h4 = F.relu(self.model.l4(state))
         h5 = F.relu(self.model.l5(h4))
         h6 = F.relu(self.model.l6(h5))
         h7 = F.relu(self.model.l7(h6))
@@ -167,7 +167,7 @@ class QNet:
         return q
 
     def q_func_target(self, state):
-        h4 = F.relu(self.model_target.l4(state / 255.0))
+        h4 = F.relu(self.model_target.l4(state))
         h5 = F.relu(self.model_target.l5(h4))
         h6 = F.relu(self.model_target.l6(h5))
         h7 = F.relu(self.model_target.l7(h6))
@@ -182,13 +182,13 @@ class QNet:
 
         if np.random.rand() < epsilon:
             index_action = np.random.randint(0, self.num_of_actions)
-            print(" Random"),
+            print(" Random")
         else:
             if self.use_gpu >= 0:
                 index_action = np.argmax(q.get())
             else:
                 index_action = np.argmax(q)
-            print("#Greedy"),
+            print("#Greedy")
         return self.index_to_action(index_action), q
 
     def target_model_update(self):

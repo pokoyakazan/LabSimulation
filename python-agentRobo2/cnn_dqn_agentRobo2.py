@@ -33,14 +33,27 @@ class CnnDqnAgent(object):
     non_image_feature_dim = 5
 
     def _observation_to_featurevec(self, observation):
+        '''
+        print "Velocity : ",
+        print observation["velocity"]
+        print "Steering : ",
+        print observation["steering"]
+        print "Last Action : ",
+        print self.last_action
+        print "Last Last Action : ",
+        print self.last_last_action
+        print "Last Last Last Action : ",
+        print self.last_last_last_action
+        '''
+
         # TODO clean
         if self.image_feature_count == 1:
             return np.r_[self.feature_extractor.feature(observation["image"][0]),
                         observation["velocity"],
                         observation["steering"],
-                        self.last_last_last_action,
+                        self.last_action,
                         self.last_last_action,
-                        self.last_action]
+                        self.last_last_last_action]
 
         elif self.image_feature_count == 4:
             return np.r_[self.feature_extractor.feature(observation["image"][0]),
@@ -60,7 +73,7 @@ class CnnDqnAgent(object):
         '''
         #self.q_net_input_dim = self.image_feature_dim * self.image_feature_count + self.depth_image_dim
         #self.q_net_input_dim = self.image_feature_dim * self.image_feature_count
-        self.q_net_input_dim = self.image_feature_dim * self.image_feature_count + non_image_feature_dim
+        self.q_net_input_dim = self.image_feature_dim * self.image_feature_count + self.non_image_feature_dim
         '''
         ------------------------------------------------------
         '''
@@ -93,6 +106,9 @@ class CnnDqnAgent(object):
         if(test):
             self.q_net.load_model(self.folder,model_num)
 
+        self.last_action = int(len(self.actions)/2)
+        self.last_last_action = int(len(self.actions)/2)
+        self.last_last_last_action = int(len(self.actions)/2)
 
     # 行動取得系,state更新系メソッド
     def agent_start(self, observation):
@@ -112,11 +128,6 @@ class CnnDqnAgent(object):
         self.last_action = copy.deepcopy(return_action)
         self.last_last_action = int(len(self.actions)/2)
         self.last_last_last_action = int(len(self.actions)/2)
-
-        print "Last Last Action : ",
-        print self.last_last_action
-        print "Last Last Last Action : ",
-        print self.last_last_last_action
 
         self.last_state = self.state.copy()
 
@@ -195,10 +206,6 @@ class CnnDqnAgent(object):
         self.last_last_last_action = copy.deepcopy(self.last_last_action)
         self.last_last_action = copy.deepcopy(self.last_action)
         self.last_action = copy.deepcopy(action)
-        print "Last Last Action : ",
-        print self.last_last_action
-        print "Last Last Last Action : ",
-        print self.last_last_last_action
 
         if self.policy_frozen is False:
             self.last_state = self.state.copy()
