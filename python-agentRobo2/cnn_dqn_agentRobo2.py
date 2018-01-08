@@ -130,13 +130,21 @@ class CnnDqnAgent(object):
         if(test):
             self.q_net.load_model(self.folder,model_num)
 
-        self.last_action = int(len(self.actions)/2)
-        self.last_last_action = int(len(self.actions)/2)
-        self.last_last_last_action = int(len(self.actions)/2)
+        #self.last_action = int(len(self.actions)/2)
+        #self.last_last_action = int(len(self.actions)/2)
+        #self.last_last_last_action = int(len(self.actions)/2)
+        self.last_action = 3
+        self.last_last_action = 3
+        self.last_last_last_action = 3
 
     # 行動取得系,state更新系メソッド
     def agent_start(self, observation):
         obs_array = self._observation_to_featurevec(observation)
+        #print obs_array[-1]
+        #print obs_array[-2]
+        #print obs_array[-3]
+        #print obs_array[-4]
+        #print obs_array[-5]
         # Initialize State
         self.state = np.zeros((self.q_net.hist_size, self.q_net_input_dim), dtype=np.uint8)
         self.state[0] = obs_array
@@ -150,8 +158,11 @@ class CnnDqnAgent(object):
 
         # Update for next step
         self.last_action = copy.deepcopy(return_action)
-        self.last_last_action = int(len(self.actions)/2)
-        self.last_last_last_action = int(len(self.actions)/2)
+
+        #self.last_last_action = int(len(self.actions)/2)
+        #self.last_last_last_action = int(len(self.actions)/2)
+        self.last_last_action = 3
+        self.last_last_last_action = 3
 
         self.last_state = self.state.copy()
 
@@ -163,6 +174,11 @@ class CnnDqnAgent(object):
     # 行動取得系,state更新系メソッド
     def agent_step(self,observation):
         obs_array = self._observation_to_featurevec(observation)
+        #print obs_array[-1]
+        #print obs_array[-2]
+        #print obs_array[-3]
+        #print obs_array[-4]
+        #print obs_array[-5]
 
         #obs_processed = np.maximum(obs_array, self.last_observation)  # Take maximum from two frames
 
