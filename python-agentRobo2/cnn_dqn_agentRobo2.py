@@ -17,7 +17,7 @@ class CnnDqnAgent(object):
     #15万CycleでEpsが0.1になる
     epsilon_delta = 0.9/(15*(10**4))
     #アクションリスト(数字じゃなくても大丈夫)
-    actions = range(9)
+    actions = range(8)
 
 
     #deltaの最小値
@@ -30,8 +30,8 @@ class CnnDqnAgent(object):
     image_feature_dim = 256 * 6 * 6
     image_feature_count = 1
 
-    #non_image_feature_dim = 5
-    non_image_feature_dim = 8
+    non_image_feature_dim = 5
+    #non_image_feature_dim = 8
 
     def action_to_ah(self,action):
         a = int(action / 3)
@@ -54,7 +54,6 @@ class CnnDqnAgent(object):
 
         # TODO clean
         if self.image_feature_count == 1:
-            '''
             return np.r_[self.feature_extractor.feature(observation["image"][0]),
                         observation["velocity"],
                         observation["steering"],
@@ -78,6 +77,7 @@ class CnnDqnAgent(object):
                         lhandle,
                         llhandle,
                         lllhandle]
+            '''
 
 
         elif self.image_feature_count == 4:
@@ -221,7 +221,7 @@ class CnnDqnAgent(object):
         else:
             q_max = np.max(q_now)
 
-        print('Step:%d  Action:%d  Reward:%.1f  Epsilon:%.6f  Q_max:%3f' % (
+        print('Step:%d  Action:%d  Reward:%.2f  Epsilon:%.6f  Q_max:%3f' % (
             self.time, self.q_net.action_to_index(action), reward, eps, q_max))
 
         # Updates for next step , 更新するだけで使ってない
