@@ -11,14 +11,11 @@ from chainer.links import caffe
 
 class CnnFeatureExtractor:
     def __init__(self, gpu, model, model_type, out_dim):
-        print ("hogehoge")
-
         self.gpu = gpu
         self.model = 'bvlc_alexnet.caffemodel'
         self.model_type = 'alexnet'
         self.batchsize = 1
         self.out_dim = out_dim
-
 
         if self.gpu >= 0:
             cuda.check_cuda_available()
@@ -73,11 +70,4 @@ class CnnFeatureExtractor:
         else:
             feature = feature.data.reshape(self.out_dim)
 
-        #print ("MAX of Image Feature")
-        #print (np.max(feature))
-        #print ("MIN of Image Feature")
-        #print (np.min(feature))
-        #print ("AVERAGE of Image Feature")
-        #print (np.average(feature))
-        #return feature * 255.0
-        return feature # depth_imageと合わせる必要がない
+        return feature * 255.0

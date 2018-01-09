@@ -16,7 +16,11 @@ class QNet:
     replay_size = 32  # Replay (batch) size
     target_model_update_freq = 10**4  # Target update frequancy. original: 10^4
     data_size = 10**5  # Data size of history. original: 10^6
-    hist_size = 1 #original: 4
+
+
+    hist_size = 4 #original: 4
+
+
     # モデルを保存する頻度
     save_model_freq = 10**4
 
@@ -27,6 +31,8 @@ class QNet:
         self.dim = dim
 
         print("Initializing Q-Network...")
+        print("Input Dim of Q-Network : "),
+        print(self.dim*self.hist_size)
 
         #hidden_dim = 256
         hidden_dim = [600,400,200,100,50]
@@ -158,7 +164,7 @@ class QNet:
             self.optimizer.update()
 
     def q_func(self, state):
-        h4 = F.relu(self.model.l4(state))
+        h4 = F.relu(self.model.l4(state / 255.0))
         h5 = F.relu(self.model.l5(h4))
         h6 = F.relu(self.model.l6(h5))
         h7 = F.relu(self.model.l7(h6))
@@ -167,7 +173,7 @@ class QNet:
         return q
 
     def q_func_target(self, state):
-        h4 = F.relu(self.model_target.l4(state))
+        h4 = F.relu(self.model_target.l4(state / 255.0))
         h5 = F.relu(self.model_target.l5(h4))
         h6 = F.relu(self.model_target.l6(h5))
         h7 = F.relu(self.model_target.l7(h6))

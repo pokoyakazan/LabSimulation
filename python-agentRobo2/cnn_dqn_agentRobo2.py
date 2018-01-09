@@ -4,34 +4,28 @@ import six.moves.cPickle as pickle
 import copy
 import os
 import numpy as np
-
-import matplotlib.pyplot as plt
-
 from chainer import cuda
 
 from cnn_feature_extractorRobo2 import CnnFeatureExtractor
 from q_netRobo2 import QNet
 
+
 class CnnDqnAgent(object):
     policy_frozen = False
-    #15万CycleでEpsが0.1になる
-    epsilon_delta = 0.9/(15*(10**4))
-    #アクションリスト(数字じゃなくても大丈夫)
-    actions = range(8)
+    epsilon_delta = 0.9/(15*(10**4)) #15万CycleでEpsが0.1になる
+    min_eps = 0.1 #deltaの最小値
 
-
-    #deltaの最小値
-    min_eps = 0.1
+    actions = range(9) #数字じゃなくてもok
 
     cnn_feature_extractor = 'alexnet_feature_extractor.pickle' #1
     model = 'bvlc_alexnet.caffemodel' #2
     model_type = 'alexnet' #3
-
     image_feature_dim = 256 * 6 * 6
     image_feature_count = 1
 
-    non_image_feature_dim = 5
+    #non_image_feature_dim = 5
     #non_image_feature_dim = 8
+    non_image_feature_dim = 0
 
     def action_to_ah(self,action):
         a = int(action / 3)
@@ -54,13 +48,15 @@ class CnnDqnAgent(object):
 
         # TODO clean
         if self.image_feature_count == 1:
+            return self.feature_extractor.feature(observation["image"][0])
+            '''
             return np.r_[self.feature_extractor.feature(observation["image"][0]),
                         observation["velocity"],
                         observation["steering"],
                         self.last_action,
                         self.last_last_action,
                         self.last_last_last_action]
-            '''
+
             laccel,lhandle = self.action_to_ah(self.last_action)
             llaccel,llhandle = self.action_to_ah(self.last_last_action)
             lllaccel,lllhandle = self.action_to_ah(self.last_last_last_action)
@@ -237,7 +233,7 @@ class CnnDqnAgent(object):
         else:
             q_max = np.max(q_now)
 
-        print('Step:%d  Action:%d  Reward:%.2f  Epsilon:%.6f  Q_max:%3f' % (
+        print('Step:%d  Action:%d  Reward:%.3f  Epsilon:%.6f  Q_max:%3f' % (
             self.time, self.q_net.action_to_index(action), reward, eps, q_max))
 
         # Updates for next step , 更新するだけで使ってない
