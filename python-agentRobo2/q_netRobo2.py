@@ -34,7 +34,15 @@ class QNet:
         print("Input Dim of Q-Network : "),
         print(self.dim*self.hist_size)
 
-        #hidden_dim = 256
+        hidden_dim = 256
+        self.model = FunctionSet(
+            l4=F.Linear(self.dim*self.hist_size, hidden_dim, wscale=np.sqrt(2)),
+            q_value=F.Linear(hidden_dim, self.num_of_actions,
+                             initialW=np.zeros((self.num_of_actions, hidden_dim),
+                                               dtype=np.float32))
+        )
+
+        '''
         hidden_dim = [600,400,200,100,50]
         self.model = FunctionSet(
             l4=F.Linear(self.dim*self.hist_size, hidden_dim[0],
@@ -51,6 +59,7 @@ class QNet:
                             initialW=np.zeros((self.num_of_actions, hidden_dim[4]),
                             dtype=np.float32))
         )
+        '''
 
         if self.use_gpu >= 0:
             self.model.to_gpu()
@@ -165,6 +174,16 @@ class QNet:
 
     def q_func(self, state):
         h4 = F.relu(self.model.l4(state / 255.0))
+        q = self.model.q_value(h4)
+        return q
+
+    def q_func_target(self, state):
+        h4 = F.relu(self.model_target.l4(state / 255.0))
+        q = self.model_target.q_value(h4)
+        return q
+    '''
+    def q_func(self, state):
+        h4 = F.relu(self.model.l4(state / 255.0))
         h5 = F.relu(self.model.l5(h4))
         h6 = F.relu(self.model.l6(h5))
         h7 = F.relu(self.model.l7(h6))
@@ -180,7 +199,7 @@ class QNet:
         h8 = F.relu(self.model_target.l8(h7))
         q = self.model_target.q_value(h8)
         return q
-
+    '''
     def e_greedy(self, state, epsilon):
         s = Variable(state)
         q = self.q_func(s)
