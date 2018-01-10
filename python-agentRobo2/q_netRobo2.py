@@ -37,6 +37,7 @@ class QNet:
         hidden_dim = 256
         self.model = FunctionSet(
             l4=F.Linear(self.dim*self.hist_size, hidden_dim, wscale=np.sqrt(2)),
+            l5=F.Linear(hidden_dim,hidden_dim,wscale=np.sqrt(2)),
             q_value=F.Linear(hidden_dim, self.num_of_actions,
                              initialW=np.zeros((self.num_of_actions, hidden_dim),
                                                dtype=np.float32))
@@ -174,12 +175,14 @@ class QNet:
 
     def q_func(self, state):
         h4 = F.relu(self.model.l4(state / 255.0))
-        q = self.model.q_value(h4)
+        h5 = F.relu(self.model.l5(h4))
+        q = self.model.q_value(h5)
         return q
 
     def q_func_target(self, state):
         h4 = F.relu(self.model_target.l4(state / 255.0))
-        q = self.model_target.q_value(h4)
+        h5 = F.relu(self.model_target.l5(h4))
+        q = self.model_target.q_value(h5)
         return q
     '''
     def q_func(self, state):
