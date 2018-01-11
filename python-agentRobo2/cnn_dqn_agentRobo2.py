@@ -15,7 +15,7 @@ class CnnDqnAgent(object):
     epsilon_delta = 0.9/(15*(10**4)) #15万CycleでEpsが0.1になる
     min_eps = 0.1 #deltaの最小値
 
-    actions = range(9) #数字じゃなくてもok
+    actions = range(5) #数字じゃなくてもok
 
     cnn_feature_extractor = 'alexnet_feature_extractor.pickle' #1
     model = 'bvlc_alexnet.caffemodel' #2
