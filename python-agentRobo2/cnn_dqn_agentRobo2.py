@@ -15,7 +15,7 @@ class CnnDqnAgent(object):
     epsilon_delta = 0.9/(15*(10**4)) #15万CycleでEpsが0.1になる
     min_eps = 0.1 #deltaの最小値
 
-    actions = range(5) #数字じゃなくてもok
+    actions = range(7) #数字じゃなくてもok
 
     cnn_feature_extractor = 'alexnet_feature_extractor.pickle' #1
     model = 'bvlc_alexnet.caffemodel' #2
@@ -33,18 +33,18 @@ class CnnDqnAgent(object):
         return a,h
 
     def _observation_to_featurevec(self, observation):
-        '''
-        print "Velocity : ",
-        print observation["velocity"]
-        print "Steering : ",
-        print observation["steering"]
-        print "Last Action : ",
-        print self.last_action
-        print "Last Last Action : ",
-        print self.last_last_action
-        print "Last Last Last Action : ",
-        print self.last_last_last_action
-        '''
+
+        #print "Velocity : ",
+        #print observation["velocity"]
+        #print "Steering : ",
+        #print observation["steering"]
+        #print "Last Action : ",
+        #print self.last_action
+        #print "Last Last Action : ",
+        #print self.last_last_action
+        #print "Last Last Last Action : ",
+        #print self.last_last_last_action
+
 
         # TODO clean
         if self.image_feature_count == 1:
@@ -165,6 +165,8 @@ class CnnDqnAgent(object):
         # 更新するだけで使ってない
         self.last_observation = obs_array
 
+
+        print "Return"
         return return_action
 
     # 行動取得系,state更新系メソッド
