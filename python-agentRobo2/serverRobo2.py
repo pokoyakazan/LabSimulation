@@ -59,7 +59,7 @@ class Root(object):
 
 class AgentServer(WebSocket):
     # 1つのモデルをためすテストの回数
-    test_num = 50
+    test_num = 10
 
     agent = CnnDqnAgent()#cnn_dqn_agent.pyの中のCnnDqnAgentクラスのインスタンス
     agent_initialized = False
