@@ -37,3 +37,17 @@ action = 4
 last_last_last_action = last_last_action
 last_last_action = last_action
 last_action = action
+
+
+in_size = 227
+mean_image = np.load('ilsvrc_2012_mean.npy')
+mean_image.shape
+
+cropwidth = 256-in_size
+start = cropwidth // 2
+stop = start + in_size
+mean_image2 = mean_image[:, start:stop, start:stop].copy()
+mean_image2.shape
+start
+stop
+4.3//2 # 切り捨て除算
