@@ -33,15 +33,15 @@ class CnnFeatureExtractor:
 
         if self.model_type == 'alexnet':
             self.in_size = 227
-            mean_image = np.load('ilsvrc_2012_mean.npy')
+            mean_image = np.load('ilsvrc_2012_mean.npy') # (3,256,256)
             del self.func.layers[15:23]
             self.outname = 'pool5'
             #del self.func.layers[13:23]
             #self.outname = 'conv5'
 
 
-        cropwidth = 256 - self.in_size
-        start = cropwidth // 2
+        cropwidth = 256 - self.in_size #[256,256]の真ん中の[227,227をくり抜く]
+        start = cropwidth // 2 # 切り捨て除算
         stop = start + self.in_size
         self.mean_image = mean_image[:, start:stop, start:stop].copy()
 

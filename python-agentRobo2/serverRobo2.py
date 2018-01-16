@@ -59,7 +59,7 @@ class Root(object):
 
 class AgentServer(WebSocket):
     # 1つのモデルをためすテストの回数
-    test_num = 50
+    test_num = 10
 
     agent = CnnDqnAgent()#cnn_dqn_agent.pyの中のCnnDqnAgentクラスのインスタンス
     agent_initialized = False
@@ -123,6 +123,7 @@ class AgentServer(WebSocket):
 
             action = self.agent.agent_start(observation)
             self.send_action(action)
+            print "send"
 
             #logファイルへの書き込み
             with open(self.log_file, 'w') as the_file:
@@ -144,7 +145,7 @@ class AgentServer(WebSocket):
                                ',' + str(self.reward_sum) +
                                ',' + str(self.episode_num) + '\n')
 
-                print "Score is %.2f"%(self.reward_sum)
+                print "Score is %.3f"%(self.reward_sum)
                 self.reward_sum = 0
 
 
