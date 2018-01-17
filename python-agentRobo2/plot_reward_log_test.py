@@ -4,117 +4,130 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import argparse
 import numpy as np
+def get_better_model(model_name):
+    df = pd.read_csv('test%s.csv'%(model_name))
+    s = df.columns[1]
+    g = df.columns[3]
 
-df1 = pd.read_csv('testAction3.csv')
-df2 = pd.read_csv('testAction5.csv')
-df3 = pd.read_csv('testAction7_1.csv')
-df4 = pd.read_csv('testAction7_2.csv')
+    score = np.array(df[s])[:1000].astype(float)
+    goal_time = np.array(df[g])[:1000]
 
-#df1 = pd.read_csv('testAction3V.csv')
-#df2 = pd.read_csv('testAction5V.csv')
-#df3 = pd.read_csv('testAction7_1V.csv')
-#df4 = pd.read_csv('testAction7_2V.csv')
+    num_model = score.shape[0]/10
+    score = score.reshape((num_model,10))
+    goal_time = goal_time.reshape((num_model,10))
 
-x1 = df1.columns[2]
-y1 = df1.columns[1]
-x2 = df2.columns[2]
-y2 = df2.columns[1]
-x3 = df3.columns[2]
-y3 = df3.columns[1]
-x4 = df4.columns[2]
-y4 = df4.columns[1]
+    clear_count_list = []
+    better_model_index = []
+    with open("betterModelLog.csv", 'a') as the_file:
+        the_file.write("%s,,\nModel,AverageScore,MaxScore,MinScore,AverageTime,FastestTime,SlowestTime\n"%(model_name))
+    for i in range(score.shape[0]):
+        clear_count = np.sum(goal_time[i] > 0)
+        clear_count_list.append(clear_count)
 
-score1 = np.array(df1[y1])[:1000]
-score2 = np.array(df2[y2])[:1000]
-score3 = np.array(df3[y3])[:1000]
-score4 = np.array(df4[y4])[:1000]
+        if(clear_count==10):
+            better_model_index.append(i)
+            with open("betterModelLog.csv", 'a') as the_file:
+                the_file.write(str((i+1)*10000) +
+                           ',' + str(np.average(score[i])) +
+                           ',' + str(np.max(score[i])) +
+                           ',' + str(np.min(score[i])) +
+                           ',' + str(np.average(goal_time[i])) +
+                           ',' + str(np.min(goal_time[i])) +
+                           ',' + str(np.max(goal_time[i])) + '\n')
 
-score1 = score1.reshape((100,10))
-score2 = score1.reshape((100,10))
-score3 = score1.reshape((100,10))
-score4 = score1.reshape((100,10))
+    return clear_count_list
 
-'''
-clear_count1 = []
-perfect_model1 = []
-average_time1 = []
-min_time1 = []
-
-clear_count2 = []
-perfect_model2 = []
-average_time2 = []
-min_time2 = []
-
-clear_count3 = []
-perfect_model3 = []
-average_time3 = []
-min_time3 = []
-
-clear_count4 = []
-perfect_model4 = []
-average_time4 = []
-min_time4 = []
-'''
-
-with open("goalTime.csv", 'a') as the_file:
-    the_file.write("Acion3,,\nModel,AverageTime,FastestTime\n")
-for i in range(score1.shape[0]):
-    clear_count = np.sum(score1[i] > 0)
-    clear_count1.append(clear_count)
-    if(clear_count==10):
-        #perfect_model1.append((i+1)*10000)
-        #perfect_model1.append(i)
-        #average_time1.append(np.average(score1[i]))
-        #min_time1.append(np.average(score1[i]))
-        #logファイルへの書き込み
-        with open("goalTime.csv", 'a') as the_file:
-            the_file.write(str((i+1)*10000) +
-                       ',' + str(np.average(score1[i])) +
-                       ',' + str(np.min(score1[i])) + '\n')
-
-with open("goalTime.csv", 'a') as the_file:
-    the_file.write("Acion5,,\nModel,AverageTime,FastestTime\n")
-for i in range(score2.shape[0]):
-    clear_count = np.sum(score2[i] > 0)
-    clear_count2.append(clear_count)
-    if(clear_count==10):
-        with open("goalTime.csv", 'a') as the_file:
-            the_file.write(str((i+1)*10000) +
-                       ',' + str(np.average(score2[i])) +
-                       ',' + str(np.min(score2[i])) + '\n')
-
-with open("goalTime.csv", 'a') as the_file:
-    the_file.write("Acion7_1,,\nModel,AverageTime,FastestTime\n")
-for i in range(score3.shape[0]):
-    clear_count = np.sum(score3[i] > 0)
-    clear_count3.append(clear_count)
-    if(clear_count==10):
-        with open("goalTime.csv", 'a') as the_file:
-            the_file.write(str((i+1)*10000) +
-                       ',' + str(np.average(score3[i])) +
-                       ',' + str(np.min(score3[i])) + '\n')
-
-with open("goalTime.csv", 'a') as the_file:
-    the_file.write("Acion7_2,,\nModel,AverageTime,FastestTime\n")
-for i in range(score4.shape[0]):
-    clear_count = np.sum(score4[i] > 0)
-    clear_count4.append(clear_count)
-    if(clear_count==10):
-        the_file.write(str((i+1)*10000) +
-                   ',' + str(np.average(score4[i])) +
-                   ',' + str(np.min(score4[i])) + '\n')
+with open("betterModelLog.csv", 'w') as the_file:
+    the_file.write("Better Models\n")
 
 
-plt.xticks(range(0,1000001,200000))
+model_name_list = ["Action3","Action5","Action7_1","Action7_2"]
+dis_x = 100 * 10**4
+plt.xticks(range(0,dis_x +1,dis_x/5))
 plt.xlabel("Cycle") # x軸のラベル
-plt.ylabel("Score") # y軸のラベル
-#plt.xlim(-1, 7) # xを-0.5-7.5の範囲に限定
+plt.ylabel("Number of goal") # y軸のラベル
+x = range(10000,1000001,10000)
+for model_name in model_name_list:
+    ccl = get_better_model(model_name)
+    if(model_name == model_name_list[0]):
+        plt.plot(x[:dis_x/10000], ccl[:dis_x/10000], label='Model1', color='red', linewidth=2.5)
+    elif(model_name == model_name_list[1]):
+        plt.plot(x[:dis_x/10000], ccl[:dis_x/10000], label='Model2', color='green', linewidth=2.5)
+    elif(model_name == model_name_list[2]):
+        plt.plot(x[:dis_x/10000], ccl[:dis_x/10000], label='Model3', color='blue', linewidth=2.5)
+    elif(model_name == model_name_list[3]):
+        plt.plot(x[:dis_x/10000], ccl[:dis_x/10000], label='Model4', color='#ffc700', linewidth=2.5)
+    plt.legend(loc = 'upper right') #これをしないと凡例出てこない(lower⇆upper, left⇆ center ⇆right)
+    plt.show()
 
-x_axis = range(10000,1000001,10000)
 
-plt.plot(x_axis, clear_count1, label='Model1', color='red', linewidth=2.5)
-plt.plot(x_axis, clear_count2, label='Model2', color='green', linewidth=2.5)
-plt.plot(x_axis, clear_count3, label='Model3', color='blue', linewidth=2.5)
-plt.plot(x_axis, clear_count4, label='Model4', color='#ffc700', linewidth=2.5)
-plt.legend(loc = 'upper right') #これをしないと凡例出てこない(lower⇆upper, left⇆ center ⇆right)
-plt.show()
+'''
+df = pd.read_csv('testAction7_2.csv')
+s = df.columns[1]
+g = df.columns[3]
+
+score = np.array(df[s])[:1000].astype(float)
+goal_time = np.array(df[g])[:1000]
+
+score[29]
+goal_time[29]
+len(score)
+num_model = score.shape[0]/10
+num_model
+score = score.reshape((num_model,10))
+goal_time = goal_time.reshape((num_model,10))
+
+df_b = pd.read_csv('testAction7_2_better.csv')
+s_b = df.columns[1]
+g_b = df.columns[3]
+
+score_b = np.array(df_b[s_b])[:1000]
+goal_time_b = np.array(df_b[g_b])[:1000]
+
+print score_b[28]
+print goal_time_b[28]
+
+print len(score_b)
+
+num_model_b = score_b.shape[0]/10
+print num_model_b
+score_b = score_b.reshape((num_model_b,10))
+goal_time_b = goal_time_b.reshape((num_model_b,10))
+
+
+print score[64]
+print goal_time[64]
+print score_b[10]
+print goal_time_b[10]
+clear_count_list = []
+
+#with open("bestModelLog.csv", 'w') as the_file:
+    #the_file.write("Acion3,,\nModel,AverageTime,FastestTime\n")
+j = 0
+for i in range(score.shape[0]):
+    clear_count = np.sum(goal_time[i] > 0)
+    clear_count_list.append(clear_count)
+    if(clear_count==10):
+        print i
+        score[i] = score_b[j].copy()
+        goal_time[i] = goal_time_b[j].copy()
+        j+=1
+        #logファイルへの書き込み
+        #with open("bestModelLog.csv", 'a') as the_file:
+            #the_file.write(str((i+1)*10000) +
+                       #',' + str(np.average(score[i])) +
+                       #',' + str(np.min(score[i])) + '\n')
+
+score = score.ravel()
+goal_time = goal_time.ravel()
+print score.shape
+
+with open("hoge7_2.csv", 'w') as the_file:
+                the_file.write('Cycle,Score,Episode,GoalTime \n')
+for i in range(1000):
+    with open("hoge7_2.csv", 'a') as the_file:
+                    the_file.write(str(i+1) +
+                               ',' + str(score[i]) +
+                               ',' + str(i+1) +
+                               ',' + str(goal_time[i]) + '\n')
+'''
