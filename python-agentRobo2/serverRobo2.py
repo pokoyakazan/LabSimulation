@@ -105,6 +105,7 @@ class AgentServer(WebSocket):
 
         velocity = dat['velocity']
         steering = dat['steering']
+        goalTime = dat['goalTime']
         observation = {"image":image, "velocity":velocity, "steering":steering}
 
         reward = dat['reward']
@@ -127,7 +128,7 @@ class AgentServer(WebSocket):
 
             #logファイルへの書き込み
             with open(self.log_file, 'w') as the_file:
-                the_file.write('Cycle,Score,Episode \n')
+                the_file.write('Cycle,Score,Episode,GoalTime \n')
 
             if(args.draw):
                 self.fig, self.ax1 = plt.subplots(1, 1)
@@ -143,7 +144,8 @@ class AgentServer(WebSocket):
                 with open(self.log_file, 'a') as the_file:
                     the_file.write(str(self.cycle_counter) +
                                ',' + str(self.reward_sum) +
-                               ',' + str(self.episode_num) + '\n')
+                               ',' + str(self.episode_num) +
+                               ',' + str(goalTime) + '\n')
 
                 print "Score is %.3f"%(self.reward_sum)
                 self.reward_sum = 0
