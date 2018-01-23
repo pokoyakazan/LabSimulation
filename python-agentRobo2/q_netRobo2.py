@@ -39,8 +39,8 @@ class QNet:
             l4=F.Linear(self.dim*self.hist_size, hidden_dim, wscale=np.sqrt(2)),
             l5=F.Linear(hidden_dim,hidden_dim,wscale=np.sqrt(2)),
             q_value=F.Linear(hidden_dim, self.num_of_actions,
-                             initialW=np.zeros((self.num_of_actions, hidden_dim),
-                                               dtype=np.float32))
+                    initialW=np.zeros((self.num_of_actions, hidden_dim),
+                    dtype=np.float32))
         )
 
         '''

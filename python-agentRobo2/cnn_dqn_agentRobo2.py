@@ -16,7 +16,6 @@ class CnnDqnAgent(object):
     min_eps = 0.1 #deltaの最小値
 
     actions = range(5) #数字じゃなくてもok
-
     cnn_feature_extractor = 'alexnet_feature_extractor.pickle' #1
     model = 'bvlc_alexnet.caffemodel' #2
     model_type = 'alexnet' #3
@@ -31,7 +30,6 @@ class CnnDqnAgent(object):
         return a,h
 
     def _observation_to_featurevec(self, observation):
-
         #print "Velocity : ",
         #print observation["velocity"]
         #print "Steering : ",
@@ -55,8 +53,6 @@ class CnnDqnAgent(object):
                         llhandle,
                         lllhandle]
             '''
-
-
         elif self.image_feature_count == 4:
             return np.r_[self.feature_extractor.feature(observation["image"][0]),
                         self.feature_extractor.feature(observation["image"][1]),
@@ -68,11 +64,12 @@ class CnnDqnAgent(object):
 
     def agent_init(self, **options):
         self.use_gpu = options['use_gpu']
-        #self.depth_image_dim = options['depth_image_dim']
         test = options['test']
-        self.folder = options["folder"]#save_modelでもしようする->self
+        self.folder = options["folder"] #save_modelで使う->self.
         model_num = options['model_num']
         self.policy_frozen = test
+        #self.depth_image_dim = options['depth_image_dim']
+
 
         self.q_net_input_dim = self.image_feature_dim * self.image_feature_count + self.non_image_feature_dim
 
@@ -89,6 +86,8 @@ class CnnDqnAgent(object):
 
         self.q_net = QNet(self.use_gpu, self.actions, self.q_net_input_dim)
 
+
+        #saveとloadが同時に行われることを防ぐため
         self.time = model_num+1
 
         non_exploration = max(self.time - self.q_net.initial_exploration , 0)
