@@ -20,7 +20,7 @@ def get_better_model(model_name):
 
     clear_count_list = []
     better_model_index = []
-    with open("./betterModelLog_V.csv", 'a') as the_file:
+    with open("./betterModelLog_fix.csv", 'a') as the_file:
         the_file.write("%s,,\nModel,AverageScore,MaxScore,MinScore,AverageTime,FastestTime,SlowestTime\n"%(model_name))
     for i in range(score.shape[0]):
         clear_count = np.sum(goal_time[i] > 0)
@@ -28,7 +28,7 @@ def get_better_model(model_name):
 
         if(clear_count>=9):
             better_model_index.append(i)
-            with open("./betterModelLog_V.csv", 'a') as the_file:
+            with open("./betterModelLog_fix.csv", 'a') as the_file:
                 the_file.write(str((i+1)*10000) +
                            ',' + str(np.average(score[i])) +
                            ',' + str(np.max(score[i])) +
@@ -39,12 +39,13 @@ def get_better_model(model_name):
 
     return clear_count_list
 
-#with open("./betterModelLog_V.csv", 'w') as the_file:
-    #the_file.write("Better Models\n")
+with open("./betterModelLog_fix.csv", 'w') as the_file:
+    the_file.write("Better Models\n")
 
 
 #model_name_list = ["Action3","Action5","Action7_1","Action7_2"]
-model_name_list = ["Action3V","Action5V","Action7_1V","Action7_2V"]
+#model_name_list = ["Action3V","Action5V","Action7_1V","Action7_2V"]
+model_name_list = ["Action3_fix"]
 dis_x = 100 * 10**4
 plt.xticks(range(0,dis_x +1,dis_x/5))
 plt.xlabel("Cycle") # x軸のラベル
