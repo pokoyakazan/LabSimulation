@@ -13,35 +13,38 @@ def get_better_model(model_name):
     goal_time = np.array(df[g])[:1000]
 
     num_model = score.shape[0]/10
+    print "Number of Model : ",num_model
+
     score = score.reshape((num_model,10))
     goal_time = goal_time.reshape((num_model,10))
 
     clear_count_list = []
     better_model_index = []
-    with open("betterModelLog.csv", 'a') as the_file:
+    with open("./betterModelLog_V.csv", 'a') as the_file:
         the_file.write("%s,,\nModel,AverageScore,MaxScore,MinScore,AverageTime,FastestTime,SlowestTime\n"%(model_name))
     for i in range(score.shape[0]):
         clear_count = np.sum(goal_time[i] > 0)
         clear_count_list.append(clear_count)
 
-        if(clear_count==10):
+        if(clear_count>=9):
             better_model_index.append(i)
-            with open("betterModelLog.csv", 'a') as the_file:
+            with open("./betterModelLog_V.csv", 'a') as the_file:
                 the_file.write(str((i+1)*10000) +
                            ',' + str(np.average(score[i])) +
                            ',' + str(np.max(score[i])) +
                            ',' + str(np.min(score[i])) +
                            ',' + str(np.average(goal_time[i])) +
-                           ',' + str(np.min(goal_time[i])) +
+                           ',' + str(np.min(goal_time[i][goal_time[i]>0])) +
                            ',' + str(np.max(goal_time[i])) + '\n')
 
     return clear_count_list
 
-with open("betterModelLog.csv", 'w') as the_file:
-    the_file.write("Better Models\n")
+#with open("./betterModelLog_V.csv", 'w') as the_file:
+    #the_file.write("Better Models\n")
 
 
-model_name_list = ["Action3","Action5","Action7_1","Action7_2"]
+#model_name_list = ["Action3","Action5","Action7_1","Action7_2"]
+model_name_list = ["Action3V","Action5V","Action7_1V","Action7_2V"]
 dis_x = 100 * 10**4
 plt.xticks(range(0,dis_x +1,dis_x/5))
 plt.xlabel("Cycle") # x軸のラベル
@@ -49,6 +52,7 @@ plt.ylabel("Number of goal") # y軸のラベル
 x = range(10000,1000001,10000)
 for model_name in model_name_list:
     ccl = get_better_model(model_name)
+    '''
     if(model_name == model_name_list[0]):
         plt.plot(x[:dis_x/10000], ccl[:dis_x/10000], label='Model1', color='red', linewidth=2.5)
     elif(model_name == model_name_list[1]):
@@ -59,6 +63,7 @@ for model_name in model_name_list:
         plt.plot(x[:dis_x/10000], ccl[:dis_x/10000], label='Model4', color='#ffc700', linewidth=2.5)
     plt.legend(loc = 'upper right') #これをしないと凡例出てこない(lower⇆upper, left⇆ center ⇆right)
     plt.show()
+    '''
 
 
 '''
