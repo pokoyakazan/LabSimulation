@@ -15,7 +15,7 @@ class CnnDqnAgent(object):
     epsilon_delta = 0.9/(15*(10**4)) #15万CycleでEpsが0.1になる
     min_eps = 0.1 #deltaの最小値
 
-    actions = range(7) #数字じゃなくてもok
+    actions = range(3) #数字じゃなくてもok
 
     cnn_feature_extractor = 'alexnet_feature_extractor.pickle' #1
     model = 'bvlc_alexnet.caffemodel' #2
@@ -120,7 +120,8 @@ class CnnDqnAgent(object):
         #saveとloadが同時に行われることを防ぐため
         self.time = model_num+1
         non_exploration = max(self.time - self.q_net.initial_exploration , 0)
-        self.epsilon = max(1.0 - non_exploration * self.epsilon_delta , self.min_eps)
+        #self.epsilon = max(1.0 - non_exploration * self.epsilon_delta , self.min_eps)
+        self.epsilon = 0.1
         print "epsilon = ",self.epsilon
 
         if(test):
