@@ -58,8 +58,7 @@ class Root(object):
 
 
 class AgentServer(WebSocket):
-    # 1つのモデルをためすテストの回数
-    test_num = 10
+    test_num = 10 # 1つのモデルをためすテストの回数
 
     agent = CnnDqnAgent()#cnn_dqn_agent.pyの中のCnnDqnAgentクラスのインスタンス
     agent_initialized = False
@@ -79,7 +78,7 @@ class AgentServer(WebSocket):
     folder = args.folder
     model_num = args.model_num
 
-    cycle_counter = model_num+1 #agentの行動回数、logファイルのX軸の値
+    cycle_counter = 0
 
     print u"------------------------------------------------"
     print u"./%sディレクトリが存在するか確認"%(folder)
@@ -117,7 +116,7 @@ class AgentServer(WebSocket):
             #depth_image_dimが引数で使われるのはここだけ
             self.agent.agent_init(
                 use_gpu=self.gpu,
-                depth_image_dim=self.depth_image_dim * self.depth_image_count,
+                #depth_image_dim=self.depth_image_dim * self.depth_image_count,
                 test= self.test,
                 folder = self.folder,
                 model_num = self.model_num)
@@ -150,10 +149,7 @@ class AgentServer(WebSocket):
                 print "Score is %.3f"%(self.reward_sum)
                 self.reward_sum = 0
 
-
-
                 if(args.test and self.episode_num % self.test_num == 0):
-                    self.cycle_counter = 0
                     self.model_num += 10000
                     self.agent.q_net.load_model(self.folder,self.model_num)
 
