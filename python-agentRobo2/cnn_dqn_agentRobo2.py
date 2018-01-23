@@ -23,8 +23,6 @@ class CnnDqnAgent(object):
     image_feature_dim = 256 * 6 * 6
     image_feature_count = 1
 
-    #non_image_feature_dim = 5
-    #non_image_feature_dim = 8
     non_image_feature_dim = 0
 
     def action_to_ah(self,action):
@@ -33,19 +31,10 @@ class CnnDqnAgent(object):
         return a,h
 
     def _observation_to_featurevec(self, observation):
-
         #print "Velocity : ",
         #print observation["velocity"]
         #print "Steering : ",
         #print observation["steering"]
-        #print "Last Action : ",
-        #print self.last_action
-        #print "Last Last Action : ",
-        #print self.last_last_action
-        #print "Last Last Last Action : ",
-        #print self.last_last_last_action
-
-
         # TODO clean
         if self.image_feature_count == 1:
             return self.feature_extractor.feature(observation["image"][0])
@@ -74,8 +63,6 @@ class CnnDqnAgent(object):
                         llhandle,
                         lllhandle]
             '''
-
-
         elif self.image_feature_count == 4:
             return np.r_[self.feature_extractor.feature(observation["image"][0]),
                         self.feature_extractor.feature(observation["image"][1]),
@@ -87,16 +74,14 @@ class CnnDqnAgent(object):
 
     def agent_init(self, **options):
         self.use_gpu = options['use_gpu']
-        self.depth_image_dim = options['depth_image_dim']
-        '''
-        ----------------------変更！！！----------------------
-        '''
-        #self.q_net_input_dim = self.image_feature_dim * self.image_feature_count + self.depth_image_dim
-        #self.q_net_input_dim = self.image_feature_dim * self.image_feature_count
+        test = options['test']
+        self.folder = options["folder"] #save_modelで使う->self.
+        model_num = options['model_num']
+        self.policy_frozen = test
+        #self.depth_image_dim = options['depth_image_dim']
+
+
         self.q_net_input_dim = self.image_feature_dim * self.image_feature_count + self.non_image_feature_dim
-        '''
-        ------------------------------------------------------
-        '''
 
         if os.path.exists(self.cnn_feature_extractor):
             print("loading... " + self.cnn_feature_extractor),
@@ -111,11 +96,6 @@ class CnnDqnAgent(object):
 
         self.q_net = QNet(self.use_gpu, self.actions, self.q_net_input_dim)
 
-        test = options['test']
-        model_num = options['model_num']
-        #save_modelでもしようするため,selfをつけた
-        self.folder = options["folder"]
-        self.policy_frozen = test
 
         #saveとloadが同時に行われることを防ぐため
         self.time = model_num+1
@@ -130,18 +110,10 @@ class CnnDqnAgent(object):
         #self.last_action = int(len(self.actions)/2)
         #self.last_last_action = int(len(self.actions)/2)
         #self.last_last_last_action = int(len(self.actions)/2)
-        self.last_action = 3
-        self.last_last_action = 3
-        self.last_last_last_action = 3
 
     # 行動取得系,state更新系メソッド
     def agent_start(self, observation):
         obs_array = self._observation_to_featurevec(observation)
-        #print obs_array[-1]
-        #print obs_array[-2]
-        #print obs_array[-3]
-        #print obs_array[-4]
-        #print obs_array[-5]
         # Initialize State
         self.state = np.zeros((self.q_net.hist_size, self.q_net_input_dim), dtype=np.uint8)
         self.state[0] = obs_array
@@ -155,29 +127,19 @@ class CnnDqnAgent(object):
 
         # Update for next step
         self.last_action = copy.deepcopy(return_action)
+        self.last_state = self.state.copy()
 
         #self.last_last_action = int(len(self.actions)/2)
         #self.last_last_last_action = int(len(self.actions)/2)
-        self.last_last_action = 3
-        self.last_last_last_action = 3
-
-        self.last_state = self.state.copy()
 
         # 更新するだけで使ってない
         self.last_observation = obs_array
 
-
-        print "Return"
         return return_action
 
     # 行動取得系,state更新系メソッド
     def agent_step(self,observation):
         obs_array = self._observation_to_featurevec(observation)
-        #print obs_array[-1]
-        #print obs_array[-2]
-        #print obs_array[-3]
-        #print obs_array[-4]
-        #print obs_array[-5]
 
         #obs_processed = np.maximum(obs_array, self.last_observation)  # Take maximum from two frames
 
