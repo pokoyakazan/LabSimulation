@@ -20,8 +20,8 @@ y2 = df2.columns[1]
 #y4 = df4.columns[1]
 
 
-df1[y1] = pd.rolling_mean(df1[y1], window=300)
-df2[y2] = pd.rolling_mean(df2[y2], window=300)
+df1[y1] = pd.rolling_mean(df1[y1], window=100)
+df2[y2] = pd.rolling_mean(df2[y2], window=100)
 #df3[y3] = pd.rolling_mean(df3[y3], window=500)
 #df4[y4] = pd.rolling_mean(df4[y4], window=500)
 
@@ -35,8 +35,8 @@ print y2_array.max()
 
 fig, ax = plt.subplots(1, 1)
 #plt.xticks(range(0,1000001,200000))
-#plt.xticks(range(0,300001,50000))
-plt.xticks(range(0,600001,100000))
+plt.xticks(range(0,300001,50000))
+#plt.xticks(range(0,600001,100000))
 
 plt.xlabel("Cycle") # x軸のラベル
 plt.ylabel("Score") # y軸のラベル
@@ -56,8 +56,12 @@ plt.plot(list(df4[x4]), y4_array, label='Model4V', color='#ffc700', linewidth=2.
 plt.plot(list(df1[x1]), y1_array, label='Model1_forward', color='red', linewidth=2.5)
 plt.plot(list(df2[x2]), y2_array, label='Model1V_forward', color='green', linewidth=2.5)
 '''
-plt.plot(list(df1[x1]), y1_array, label='Model1A', color='red', linewidth=2.5)
-plt.plot(list(df2[x2]), y2_array, label='Model1VA', color='green', linewidth=2.5)
+plt.plot(list(df1[x1]), y1_array, label='Model1_forward', color='red', linewidth=2.5)
+plt.plot(list(df2[x2]), y2_array, label='Model1V_forward', color='green', linewidth=2.5)
+
+#plt.plot(list(df1[x1]), y1_array, label='Model1A', color='red', linewidth=2.5)
+#plt.plot(list(df2[x2]), y2_array, label='Model1VA', color='green', linewidth=2.5)
+
 plt.legend(loc = 'upper left') #これをしないと凡例出てこない(lower⇆upper, left⇆ center ⇆right)
 plt.show()
 
