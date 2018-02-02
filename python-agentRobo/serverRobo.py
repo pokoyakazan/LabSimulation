@@ -160,8 +160,6 @@ class AgentServer(WebSocket):
                                 ',' + str(self.action_count[3])+
                                 ',' + str(self.action_count[4])+ '\n')
                     '''
-
-
                     self.action_count = [0]*5
                     self.model_num += 10000
                     self.agent.q_net.load_model(self.folder,self.model_num)
@@ -174,21 +172,13 @@ class AgentServer(WebSocket):
                 action = self.agent.agent_start(observation)
                 self.send_action(action)
 
-
                 self.action_count[action]+=1
-
-
-
 
             else:
                 action, eps, q_now, obs_array = self.agent.agent_step( observation)
 
                 self.send_action(action)
-
-
                 self.action_count[action]+=1
-
-
                 self.agent.agent_step_update(reward, action, eps, q_now, obs_array)
                 #print q_now.ravel()
                 # draw Q value
