@@ -37,7 +37,6 @@ parser.add_argument('--draw', '-d', action = "store_true",
 parser.add_argument('--gpu', '-g', default=-1, type=int,
                     help=u'GPU ID (negative value indicates CPU)')
 
-
 parser.add_argument('--port', '-p', default='8765', type=int,
                     help=u'websocket port')
 parser.add_argument('--ip', '-i', default='127.0.0.1',
@@ -67,9 +66,7 @@ class AgentServer(WebSocket):
     thread_event = threading.Event()#threading -> Eventの中にWait,Setがある
     reward_sum = 0
 
-    #depthImageをベクトルreshape,agent_initの引数に使用
-    depth_image_dim = 32 * 32
-    depth_image_count = 1
+    image_count = 1
 
     log_file = args.log_file
     gpu = args.gpu
@@ -96,17 +93,11 @@ class AgentServer(WebSocket):
         dat = msgpack.unpackb(payload)
 
         image = []
-        for i in xrange(self.depth_image_count):
+        for i in xrange(self.image_count):
             one_image = Image.open(io.BytesIO(bytearray(dat['image'][i])))
             image.append(one_image)
 
-        #if self.agent_initialized:
-            #self.pause_Image_plot(image[0])
-
-        velocity = dat['velocity']
-        steering = dat['steering']
-        goalTime = dat['goalTime']
-        observation = {"image":image, "velocity":velocity, "steering":steering}
+        observation = {"image":image}
 
         reward = dat['reward']
         end_episode = dat['endEpisode']
@@ -114,10 +105,8 @@ class AgentServer(WebSocket):
         if not self.agent_initialized:
             self.agent_initialized = True
             print ("initializing agent...")
-            #depth_image_dimが引数で使われるのはここだけ
             self.agent.agent_init(
                 use_gpu=self.gpu,
-                #depth_image_dim=self.depth_image_dim * self.depth_image_count,
                 test= self.test,
                 folder = self.folder,
                 model_num = self.model_num)
@@ -160,8 +149,6 @@ class AgentServer(WebSocket):
                                 ',' + str(self.action_count[3])+
                                 ',' + str(self.action_count[4])+ '\n')
                     '''
-
-
                     self.action_count = [0]*5
                     self.model_num += 10000
                     self.agent.q_net.load_model(self.folder,self.model_num)
@@ -173,25 +160,14 @@ class AgentServer(WebSocket):
                 print "----------------------------------"
                 action = self.agent.agent_start(observation)
                 self.send_action(action)
-
-
                 self.action_count[action]+=1
-
-
-
 
             else:
                 action, eps, q_now, obs_array = self.agent.agent_step( observation)
-
                 self.send_action(action)
-
+                self.agent.agent_step_update(reward, action, eps, q_now, obs_array)
 
                 self.action_count[action]+=1
-
-
-                self.agent.agent_step_update(reward, action, eps, q_now, obs_array)
-                #print q_now.ravel()
-                # draw Q value
                 if args.draw:
                     self.pause_Q_plot(q_now.ravel())
 
@@ -205,19 +181,19 @@ class AgentServer(WebSocket):
     #Q関数のplot
     def pause_Q_plot(self, q):
         self.ax1.cla()
-        actions = range(7)
-
+        actions = range(3)
+        q = q[:3]
         max_q_abs = max(abs(q))
         if max_q_abs != 0:
             q = q / float(max_q_abs)
 
         self.ax1.set_xticks(actions)
-        self.ax1.set_xticklabels(['-30','-20','-10','0','10','20','30'], rotation=0, fontsize='small')
+        self.ax1.set_xticklabels(['Left','Forward','Right'], rotation=0, fontsize='small')
         self.ax1.set_xlabel("Action") # x軸のラベル
         self.ax1.set_ylabel("Q_Value") # y軸のラベル
         self.ax1.set_ylim(-1.1, 1.1)  # yを-1.1-1.1の範囲に限定
-        self.ax1.set_xlim(-1, 7) # xを-0.5-7.5の範囲に限定
-        self.ax1.hlines(y=0, xmin=-37, xmax=37, colors='r', linewidths=2) #y=0の直線
+        self.ax1.set_xlim(-1, 4)
+        self.ax1.hlines(y=0, xmin=-1, xmax=4, colors='r', linewidths=2) #y=0の直線
 
         self.ax1.bar(actions,q,align="center")
         plt.pause(1.0 / 10**10) #引数はsleep時間

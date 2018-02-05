@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import copy
 import numpy as np
 from chainer import cuda, FunctionSet, Variable, optimizers, serializers
@@ -10,19 +9,13 @@ class QNet:
     # Hyper-Parameters
     gamma = 0.99  # 報酬の割引率
 
-    #最初に1000回ランダムに行動
     initial_exploration = 10**3  # Initial exploratoin. original: 5x10^4
 
     replay_size = 32  # Replay (batch) size
     target_model_update_freq = 10**4  # Target update frequancy. original: 10^4
     data_size = 10**5  # Data size of history. original: 10^6
-
-
     hist_size = 4 #original: 4
-
-
-    # モデルを保存する頻度
-    save_model_freq = 10**4
+    save_model_freq = 10**4 # モデルを保存する頻度
 
     def __init__(self, use_gpu, enable_controller, dim):
         self.use_gpu = use_gpu
@@ -42,25 +35,6 @@ class QNet:
                     initialW=np.zeros((self.num_of_actions, hidden_dim),
                     dtype=np.float32))
         )
-
-        '''
-        hidden_dim = [600,400,200,100,50]
-        self.model = FunctionSet(
-            l4=F.Linear(self.dim*self.hist_size, hidden_dim[0],
-                            wscale=np.sqrt(2)),
-            l5=F.Linear(hidden_dim[0],hidden_dim[1],
-                            wscale=np.sqrt(2)),
-            l6=F.Linear(hidden_dim[1],hidden_dim[2],
-                            wscale=np.sqrt(2)),
-            l7=F.Linear(hidden_dim[2],hidden_dim[3],
-                            wscale=np.sqrt(2)),
-            l8=F.Linear(hidden_dim[3],hidden_dim[4],
-                            wscale=np.sqrt(2)),
-            q_value=F.Linear(hidden_dim[4], self.num_of_actions,
-                            initialW=np.zeros((self.num_of_actions, hidden_dim[4]),
-                            dtype=np.float32))
-        )
-        '''
 
         if self.use_gpu >= 0:
             self.model.to_gpu()
@@ -125,11 +99,9 @@ class QNet:
 
     def stock_experience(self, time,state, action, reward,
                         state_dash,episode_end_flag):
-        #timeを引数に入れることでqueueを実現
-        data_index = time % self.data_size
-        #奥山プログラムとの違い -> appendじゃない
-        # -> ep_endがTrueならstate_dashが全て0になる
-        if episode_end_flag is True:
+        data_index = time % self.data_size #timeを引数に入れることでqueueを実現
+
+        if episode_end_flag is True: # ep_endがTrueならstate_dashが全て0になる
             self.d[0][data_index] = state
             self.d[1][data_index] = action
             self.d[2][data_index] = reward
@@ -142,15 +114,11 @@ class QNet:
 
     def experience_replay(self, time):
         if self.initial_exploration < time:
-            # Pick up replay_size number of samples from the Data
-            # 例 : np.random.randint(0,100,(5,5))  0〜99 の整数で5x5の行列を生成
             if time < self.data_size: #during the first sweep of the History
                 replay_index = np.random.randint(0, time, (self.replay_size, 1))
             else:
                 replay_index = np.random.randint(0, self.data_size, (self.replay_size, 1))
 
-            #奥山プログラムとの違い -> 全てのExperienceに対してReplayない
-            # -> ep_endがTrueならstate_dashが全て0になる
             s_replay = np.ndarray(shape=(self.replay_size, self.hist_size, self.dim), dtype=np.float32)
             a_replay = np.ndarray(shape=(self.replay_size, 1), dtype=np.uint8)
             r_replay = np.ndarray(shape=(self.replay_size, 1), dtype=np.float32)
@@ -184,30 +152,11 @@ class QNet:
         h5 = F.relu(self.model_target.l5(h4))
         q = self.model_target.q_value(h5)
         return q
-    '''
-    def q_func(self, state):
-        h4 = F.relu(self.model.l4(state / 255.0))
-        h5 = F.relu(self.model.l5(h4))
-        h6 = F.relu(self.model.l6(h5))
-        h7 = F.relu(self.model.l7(h6))
-        h8 = F.relu(self.model.l8(h7))
-        q = self.model.q_value(h8)
-        return q
 
-    def q_func_target(self, state):
-        h4 = F.relu(self.model_target.l4(state / 255.0))
-        h5 = F.relu(self.model_target.l5(h4))
-        h6 = F.relu(self.model_target.l6(h5))
-        h7 = F.relu(self.model_target.l7(h6))
-        h8 = F.relu(self.model_target.l8(h7))
-        q = self.model_target.q_value(h8)
-        return q
-    '''
     def e_greedy(self, state, epsilon):
         s = Variable(state)
         q = self.q_func(s)
         q = q.data
-
         if np.random.rand() < epsilon:
             index_action = np.random.randint(0, self.num_of_actions)
             print(" Random")
