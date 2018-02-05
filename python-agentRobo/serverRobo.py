@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import cherrypy
 import argparse
 from ws4py.server.cherrypyserver import WebSocketPlugin, WebSocketTool
