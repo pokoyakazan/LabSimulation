@@ -10,39 +10,29 @@ from PIL import Image
 from PIL import ImageOps
 import threading
 import numpy as np
-
 import matplotlib.pyplot as plt
-import cv2
-
 
 parser = argparse.ArgumentParser(description='ml-agent-for-unity')
-
 parser.add_argument('--log-file', '-l', default='reward.log', type=str,
                     help=u'reward log file name')
-
 parser.add_argument('--folder', '-f', default='Model0', type=str,
                     help=u'モデルの存在するフォルダ名')
 parser.add_argument('--model_num', '-m', default=0,type=int,
                     help=u'最初にロードするモデルの番号')
-
 parser.add_argument('--test', '-t', action = "store_true",
                     help=u'TEST frags, False => Train')
-
 parser.add_argument('--episode', '-e', default=1, type=int,
                     help=u'logファイルに書き込む際のエピソードの数')
-
 parser.add_argument('--draw', '-d', action = "store_true",
                     help=u'Draw Bar of Q-value flags')
 parser.add_argument('--gpu', '-g', default=-1, type=int,
                     help=u'GPU ID (negative value indicates CPU)')
-
 parser.add_argument('--port', '-p', default='8765', type=int,
                     help=u'websocket port')
 parser.add_argument('--ip', '-i', default='127.0.0.1',
                     help=u'server ip')
 
 args = parser.parse_args()
-
 
 class Root(object):
     @cherrypy.expose
@@ -56,7 +46,7 @@ class Root(object):
 
 
 class AgentServer(WebSocket):
-    test_num = 10 # 1つのモデルをためすテストの回数
+    test_num = 5000 # 1つのモデルをためすテストの回数
     action_count = [0]*5
 
     agent = CnnDqnAgent()#cnn_dqn_agent.pyの中のCnnDqnAgentクラスのインスタンス
@@ -65,7 +55,7 @@ class AgentServer(WebSocket):
     thread_event = threading.Event()#threading -> Eventの中にWait,Setがある
     reward_sum = 0
 
-    image_count = 1
+    image_count = 1 # 1cycleでUnityのAgentから送られてくる画像の枚数
 
     log_file = args.log_file
     gpu = args.gpu
@@ -88,89 +78,95 @@ class AgentServer(WebSocket):
         self.send(dat, binary=True)
 
     def received_message(self, m):
-        payload = m.data
-        dat = msgpack.unpackb(payload)
+        try:
+            payload = m.data
+            dat = msgpack.unpackb(payload)
 
-        image = []
-        for i in xrange(self.image_count):
-            one_image = Image.open(io.BytesIO(bytearray(dat['image'][i])))
-            image.append(one_image)
+            image = []
+            for i in xrange(self.image_count):
+                image.append(Image.open(io.BytesIO(bytearray(dat['image'][i]))))
 
-        observation = {"image":image}
+            observation = {"image":image}
 
-        reward = dat['reward']
-        end_episode = dat['endEpisode']
+            reward = dat['reward']
+            end_episode = dat['endEpisode']
+            goalTime = dat['goalTime']
 
-        if not self.agent_initialized:
-            self.agent_initialized = True
-            print ("initializing agent...")
-            self.agent.agent_init(
-                use_gpu=self.gpu,
-                test= self.test,
-                folder = self.folder,
-                model_num = self.model_num)
+            if not self.agent_initialized:
+                self.agent_initialized = True
+                print ("initializing agent...")
+                self.agent.agent_init(
+                    image_count=self.image_count,
+                    use_gpu=self.gpu,
+                    test= self.test,
+                    folder = self.folder,
+                    model_num = self.model_num)
 
-            action = self.agent.agent_start(observation)
-            self.send_action(action)
-            print "send"
-
-            #logファイルへの書き込み
-            with open(self.log_file, 'w') as the_file:
-                the_file.write('Cycle,Score,Episode,GoalTime \n')
-
-            if(args.draw):
-                self.fig, self.ax1 = plt.subplots(1, 1)
-
-        else:
-            self.thread_event.wait()
-            self.cycle_counter += 1
-            self.reward_sum += reward
-
-            if end_episode:
-                self.agent.agent_end(reward)
-                #logファイルへの書き込み
-                with open(self.log_file, 'a') as the_file:
-                    the_file.write(str(self.cycle_counter) +
-                               ',' + str(self.reward_sum) +
-                               ',' + str(self.episode_num) +
-                               ',' + str(goalTime) + '\n')
-
-                print "Score is %.3f"%(self.reward_sum)
-                self.reward_sum = 0
-
-                if(args.test and self.episode_num % self.test_num == 0):
-                    '''
-                    with open('AcionLog.csv', 'a') as the_file:
-                        the_file.write(str(self.model_num) +
-                                ',' + str(self.action_count[0])+
-                                ',' + str(self.action_count[1])+
-                                ',' + str(self.action_count[2])+
-                                ',' + str(self.action_count[3])+
-                                ',' + str(self.action_count[4])+ '\n')
-                    '''
-                    self.action_count = [0]*5
-                    self.model_num += 10000
-                    self.agent.q_net.load_model(self.folder,self.model_num)
-
-                self.episode_num += 1
-
-                print "----------------------------------"
-                print "Episode %d Start"%(self.episode_num)
-                print "----------------------------------"
                 action = self.agent.agent_start(observation)
                 self.send_action(action)
-                self.action_count[action]+=1
+                print "send"
+
+                #logファイルへの書き込み
+                with open(self.log_file, 'w') as the_file:
+                    the_file.write('Cycle,Score,Episode,GoalTime \n')
+
+                if(args.draw):
+                    self.fig, self.ax1 = plt.subplots(1, 1)
 
             else:
-                action, eps, q_now, obs_array = self.agent.agent_step( observation)
-                self.send_action(action)
-                self.agent.agent_step_update(reward, action, eps, q_now, obs_array)
+                self.thread_event.wait()
+                self.cycle_counter += 1
+                self.reward_sum += reward
 
-                self.action_count[action]+=1
-                if args.draw:
-                    self.pause_Q_plot(q_now.ravel())
+                if end_episode:
+                    self.agent.agent_end(reward)
+                    #logファイルへの書き込み
+                    with open(self.log_file, 'a') as the_file:
+                        the_file.write(str(self.cycle_counter) +
+                                   ',' + str(self.reward_sum) +
+                                   ',' + str(self.episode_num) +
+                                   ',' + str(goalTime) + '\n')
+                    print "Score is %.3f"%(self.reward_sum)
+                    self.reward_sum = 0
 
-        self.thread_event.set()
+                    if(args.test and self.episode_num % self.test_num == 0):
+                        '''
+                        with open('AcionLog.csv', 'a') as the_file:
+                            the_file.write(str(self.model_num) +
+                                    ',' + str(self.action_count[0])+
+                                    ',' + str(self.action_count[1])+
+                                    ',' + str(self.action_count[2])+
+                                    ',' + str(self.action_count[3])+
+                                    ',' + str(self.action_count[4])+ '\n')
+                        '''
+                        self.action_count = [0]*5
+                        self.model_num += 10000
+                        self.agent.q_net.load_model(self.folder,self.model_num)
+
+                    self.episode_num += 1
+
+                    print "----------------------------------"
+                    print "Episode %d Start"%(self.episode_num)
+                    print "----------------------------------"
+                    action = self.agent.agent_start(observation)
+                    self.send_action(action)
+                    self.action_count[action]+=1
+
+                else:
+                    action, eps, q_now, obs_array = self.agent.agent_step(observation)
+                    self.send_action(action)
+                    self.agent.agent_step_update(reward, action, eps, q_now)
+
+                    self.action_count[action]+=1
+                    if args.draw:
+                        self.pause_Q_plot(q_now.ravel())
+
+            self.thread_event.set()
+        except:
+            import traceback
+            import sys
+            traceback.print_exc()
+            sys.exit()
 
     def pause_Image_plot(self, img):
         plt.cla()

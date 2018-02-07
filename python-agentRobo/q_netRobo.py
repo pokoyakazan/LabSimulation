@@ -4,7 +4,6 @@ import numpy as np
 from chainer import cuda, FunctionSet, Variable, optimizers, serializers
 import chainer.functions as F
 
-
 class QNet:
     # Hyper-Parameters
     gamma = 0.99  # 報酬の割引率
@@ -24,8 +23,7 @@ class QNet:
         self.dim = dim
 
         print("Initializing Q-Network...")
-        print("Input Dim of Q-Network : "),
-        print(self.dim*self.hist_size)
+        print("Input Dim of Q-Network : ",self.dim*self.hist_size)
 
         hidden_dim = 256
         self.model = FunctionSet(
@@ -100,7 +98,6 @@ class QNet:
     def stock_experience(self, time,state, action, reward,
                         state_dash,episode_end_flag):
         data_index = time % self.data_size #timeを引数に入れることでqueueを実現
-
         if episode_end_flag is True: # ep_endがTrueならstate_dashが全て0になる
             self.d[0][data_index] = state
             self.d[1][data_index] = action

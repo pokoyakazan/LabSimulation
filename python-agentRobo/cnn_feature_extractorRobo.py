@@ -39,7 +39,6 @@ class CnnFeatureExtractor:
             #del self.func.layers[13:23]
             #self.outname = 'conv5'
 
-
         cropwidth = 256 - self.in_size #[256,256]の真ん中の[227,227をくり抜く]
         start = cropwidth // 2 # 切り捨て除算
         stop = start + self.in_size
